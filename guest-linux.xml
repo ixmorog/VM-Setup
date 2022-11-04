@@ -1,6 +1,6 @@
 <domain xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" type="kvm">
   <name>mx-work</name>
-  <uuid>923e3a1f-fe4a-4068-a442-94af3b3b447f</uuid>
+  <uuid>d58117c7-a795-42cd-9873-677a209d5724</uuid>
   <metadata>
     <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
       <libosinfo:os id="http://ubuntu.com/ubuntu/22.04"/>
@@ -11,18 +11,14 @@
   <vcpu placement="static">8</vcpu>
   <os>
     <type arch="x86_64" machine="pc-q35-7.1">hvm</type>
-    <loader readonly="yes" secure="yes" type="pflash">/usr/share/edk2-ovmf/x64/OVMF_CODE.secboot.fd</loader>
+    <loader readonly="yes" type="pflash">/usr/share/edk2-ovmf/x64/OVMF_CODE.fd</loader>
     <nvram>/var/lib/libvirt/qemu/nvram/mx-work_VARS.fd</nvram>
     <boot dev="hd"/>
   </os>
   <features>
     <acpi/>
     <apic/>
-    <kvm>
-      <hidden state="on"/>
-    </kvm>
     <vmport state="off"/>
-    <smm state="on"/>
   </features>
   <cpu mode="host-passthrough" check="none" migratable="on">
     <topology sockets="1" dies="1" cores="2" threads="4"/>
@@ -43,9 +39,9 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type="file" device="disk">
       <driver name="qemu" type="qcow2" discard="unmap"/>
-      <source file="/var/lib/libvirt/images/ubuntu22.04.qcow2"/>
-      <target dev="sda" bus="scsi"/>
-      <address type="drive" controller="0" bus="0" target="0" unit="0"/>
+      <source file="/var/lib/libvirt/images/mx-work.qcow2"/>
+      <target dev="sdb" bus="scsi"/>
+      <address type="drive" controller="0" bus="0" target="0" unit="1"/>
     </disk>
     <controller type="usb" index="0" model="qemu-xhci" ports="15">
       <address type="pci" domain="0x0000" bus="0x02" slot="0x00" function="0x0"/>
@@ -127,12 +123,9 @@
     <controller type="sata" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
     </controller>
-    <controller type="virtio-serial" index="0">
-      <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
-    </controller>
     <interface type="bridge">
-      <mac address="52:54:00:9e:9b:50"/>
-      <source bridge="bridge-enp7s0"/>
+      <mac address="52:54:00:3f:38:8c"/>
+      <source bridge="br0"/>
       <model type="virtio"/>
       <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
     </interface>
@@ -140,7 +133,7 @@
       <source dev="/dev/input/by-id/usb-COMPANY_USB_Device-if01-event-mouse"/>
     </input>
     <input type="evdev">
-      <source dev="/dev/input/by-id/usb-04d9_USB_Keyboard-if01-event-kbd" grab="all" grabToggle="ctrl-ctrl" repeat="on"/>
+      <source dev="/dev/input/by-id/usb-04d9_USB_Keyboard-if01-event-kbd" grab="all" grabToggle="scrolllock" repeat="on"/>
     </input>
     <input type="mouse" bus="virtio">
       <address type="pci" domain="0x0000" bus="0x05" slot="0x00" function="0x0"/>
@@ -151,8 +144,6 @@
     <input type="mouse" bus="ps2"/>
     <input type="keyboard" bus="ps2"/>
     <sound model="ich9">
-      <codec type="micro"/>
-      <audio id="1"/>
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1b" function="0x0"/>
     </sound>
     <audio id="1" type="jack">
@@ -161,22 +152,16 @@
     </audio>
     <hostdev mode="subsystem" type="pci" managed="yes">
       <source>
-        <address domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
+        <address domain="0x0000" bus="0x00" slot="0x02" function="0x0"/>
       </source>
-      <address type="pci" domain="0x0000" bus="0x06" slot="0x00" function="0x0"/>
-    </hostdev>
-    <hostdev mode="subsystem" type="pci" managed="yes">
-      <source>
-        <address domain="0x0000" bus="0x01" slot="0x00" function="0x1"/>
-      </source>
-      <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
     </hostdev>
     <memballoon model="virtio">
-      <address type="pci" domain="0x0000" bus="0x08" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x06" slot="0x00" function="0x0"/>
     </memballoon>
     <rng model="virtio">
       <backend model="random">/dev/urandom</backend>
-      <address type="pci" domain="0x0000" bus="0x09" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
     </rng>
   </devices>
   <qemu:commandline>
@@ -184,4 +169,3 @@
     <qemu:env name="PIPEWIRE_LATENCY" value="512/48000"/>
   </qemu:commandline>
 </domain>
-
