@@ -1,6 +1,6 @@
 <domain xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" type="kvm">
   <name>mx-win11</name>
-  <uuid>5230ee23-00c8-4ee0-8ca7-ba0410e83251</uuid>
+  <uuid>6891dbe7-6d2e-4940-b7cf-214e1109e725</uuid>
   <metadata>
     <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
       <libosinfo:os id="http://microsoft.com/win/10"/>
@@ -175,6 +175,9 @@
     <controller type="sata" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
     </controller>
+    <controller type="virtio-serial" index="0">
+      <address type="pci" domain="0x0000" bus="0x06" slot="0x00" function="0x0"/>
+    </controller>
     <filesystem type="mount" accessmode="passthrough">
       <driver type="virtiofs"/>
       <source dir="/storage"/>
@@ -183,7 +186,7 @@
     </filesystem>
     <interface type="bridge">
       <mac address="52:54:00:9c:19:00"/>
-      <source bridge="bridge-enp7s0"/>
+      <source bridge="br0"/>
       <model type="virtio"/>
       <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
     </interface>
@@ -194,10 +197,10 @@
       <source dev="/dev/input/by-id/usb-04d9_USB_Keyboard-if01-event-kbd" grab="all" grabToggle="ctrl-ctrl" repeat="on"/>
     </input>
     <input type="mouse" bus="virtio">
-      <address type="pci" domain="0x0000" bus="0x06" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x03" slot="0x00" function="0x0"/>
     </input>
     <input type="keyboard" bus="virtio">
-      <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
     </input>
     <input type="mouse" bus="ps2"/>
     <input type="keyboard" bus="ps2"/>
@@ -217,13 +220,7 @@
       <source>
         <address domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
       </source>
-      <address type="pci" domain="0x0000" bus="0x03" slot="0x00" function="0x0"/>
-    </hostdev>
-    <hostdev mode="subsystem" type="pci" managed="yes">
-      <source>
-        <address domain="0x0000" bus="0x01" slot="0x00" function="0x1"/>
-      </source>
-      <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
     </hostdev>
     <memballoon model="virtio">
       <address type="pci" domain="0x0000" bus="0x05" slot="0x00" function="0x0"/>
@@ -234,4 +231,3 @@
     <qemu:env name="PIPEWIRE_LATENCY" value="512/48000"/>
   </qemu:commandline>
 </domain>
-
