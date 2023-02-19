@@ -6,15 +6,15 @@
       <libosinfo:os id="http://microsoft.com/win/10"/>
     </libosinfo:libosinfo>
   </metadata>
-  <memory unit="KiB">16777216</memory>
-  <currentMemory unit="KiB">16777216</currentMemory>
+  <memory unit="KiB">33554432</memory>
+  <currentMemory unit="KiB">33554432</currentMemory>
   <memoryBacking>
     <source type="memfd"/>
     <access mode="shared"/>
   </memoryBacking>
   <vcpu placement="static">10</vcpu>
-  <iothreads>1</iothreads>
   <cputune>
+    <quota>-1</quota>
     <vcpupin vcpu="0" cpuset="1"/>
     <vcpupin vcpu="1" cpuset="7"/>
     <vcpupin vcpu="2" cpuset="2"/>
@@ -26,7 +26,6 @@
     <vcpupin vcpu="8" cpuset="5"/>
     <vcpupin vcpu="9" cpuset="11"/>
     <emulatorpin cpuset="0,6"/>
-    <iothreadpin iothread="1" cpuset="0,6"/>
   </cputune>
   <os>
     <type arch="x86_64" machine="pc-q35-7.1">hvm</type>
@@ -37,12 +36,15 @@
   </os>
   <features>
     <acpi/>
-    <apic/>
+    <apic eoi="on"/>
     <hyperv mode="custom">
       <relaxed state="on"/>
       <vapic state="on"/>
       <spinlocks state="on" retries="8191"/>
-      <vendor_id state="on" value="randomid"/>
+      <vpindex state="on"/>
+      <synic state="on"/>
+      <vendor_id state="on" value="0123756792CD"/>
+      <frequencies state="on"/>
     </hyperv>
     <kvm>
       <hidden state="on"/>
@@ -51,7 +53,10 @@
     <smm state="on"/>
   </features>
   <cpu mode="host-passthrough" check="none" migratable="on">
-    <topology sockets="1" dies="1" cores="2" threads="5"/>
+    <topology sockets="1" dies="1" cores="5" threads="2"/>
+    <cache mode="passthrough"/>
+    <feature policy="require" name="hypervisor"/>
+    <feature policy="require" name="invtsc"/>
   </cpu>
   <clock offset="localtime">
     <timer name="rtc" tickpolicy="catchup"/>
