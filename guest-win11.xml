@@ -1,4 +1,4 @@
-<domain xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" type="kvm">
+<domain type="kvm">
   <name>mx-win11</name>
   <uuid>6891dbe7-6d2e-4940-b7cf-214e1109e725</uuid>
   <metadata>
@@ -12,20 +12,16 @@
     <source type="memfd"/>
     <access mode="shared"/>
   </memoryBacking>
-  <vcpu placement="static">10</vcpu>
+  <vcpu placement="static">8</vcpu>
   <cputune>
-    <quota>-1</quota>
-    <vcpupin vcpu="0" cpuset="1"/>
-    <vcpupin vcpu="1" cpuset="7"/>
-    <vcpupin vcpu="2" cpuset="2"/>
-    <vcpupin vcpu="3" cpuset="8"/>
-    <vcpupin vcpu="4" cpuset="3"/>
-    <vcpupin vcpu="5" cpuset="9"/>
-    <vcpupin vcpu="6" cpuset="4"/>
-    <vcpupin vcpu="7" cpuset="10"/>
-    <vcpupin vcpu="8" cpuset="5"/>
-    <vcpupin vcpu="9" cpuset="11"/>
-    <emulatorpin cpuset="0,6"/>
+    <vcpupin vcpu="0" cpuset="2"/>
+    <vcpupin vcpu="1" cpuset="8"/>
+    <vcpupin vcpu="2" cpuset="3"/>
+    <vcpupin vcpu="3" cpuset="9"/>
+    <vcpupin vcpu="4" cpuset="4"/>
+    <vcpupin vcpu="5" cpuset="10"/>
+    <vcpupin vcpu="6" cpuset="5"/>
+    <vcpupin vcpu="7" cpuset="11"/>
   </cputune>
   <os>
     <type arch="x86_64" machine="pc-q35-7.1">hvm</type>
@@ -53,7 +49,7 @@
     <smm state="on"/>
   </features>
   <cpu mode="host-passthrough" check="none" migratable="on">
-    <topology sockets="1" dies="1" cores="5" threads="2"/>
+    <topology sockets="1" dies="1" cores="4" threads="2"/>
     <cache mode="passthrough"/>
     <feature policy="require" name="hypervisor"/>
     <feature policy="require" name="invtsc"/>
@@ -217,22 +213,16 @@
       <audio id="1"/>
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1b" function="0x0"/>
     </sound>
-    <audio id="1" type="jack">
-      <input clientName="mx-win11" connectPorts="Beoplay H9i Monitor:monitor_F[LR]"/>
-      <output clientName="mx-win11" connectPorts="Beoplay H9i:playback_F[LR]"/>
-    </audio>
+    <audio id="1" type="none"/>
     <hostdev mode="subsystem" type="pci" managed="yes">
       <source>
         <address domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
       </source>
       <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
     </hostdev>
+    <watchdog model="itco" action="reset"/>
     <memballoon model="virtio">
       <address type="pci" domain="0x0000" bus="0x05" slot="0x00" function="0x0"/>
     </memballoon>
   </devices>
-  <qemu:commandline>
-    <qemu:env name="PIPEWIRE_RUNTIME_DIR" value="/run/user/1000"/>
-    <qemu:env name="PIPEWIRE_LATENCY" value="512/48000"/>
-  </qemu:commandline>
 </domain>
