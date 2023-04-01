@@ -1,9 +1,9 @@
-<domain type="kvm">
+<domain xmlns:qemu="http://libvirt.org/schemas/domain/qemu/1.0" type="kvm">
   <name>mx-win11</name>
-  <uuid>6891dbe7-6d2e-4940-b7cf-214e1109e725</uuid>
+  <uuid>761f271b-b8bc-4e21-9638-07b569ecaf4f</uuid>
   <metadata>
     <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
-      <libosinfo:os id="http://microsoft.com/win/10"/>
+      <libosinfo:os id="http://microsoft.com/win/11"/>
     </libosinfo:libosinfo>
   </metadata>
   <memory unit="KiB">33554432</memory>
@@ -13,6 +13,7 @@
     <access mode="shared"/>
   </memoryBacking>
   <vcpu placement="static">8</vcpu>
+  <iothreads>1</iothreads>
   <cputune>
     <vcpupin vcpu="0" cpuset="2"/>
     <vcpupin vcpu="1" cpuset="8"/>
@@ -22,37 +23,30 @@
     <vcpupin vcpu="5" cpuset="10"/>
     <vcpupin vcpu="6" cpuset="5"/>
     <vcpupin vcpu="7" cpuset="11"/>
+    <emulatorpin cpuset="0,6"/>
+    <iothreadpin iothread="1" cpuset="0,6"/>
   </cputune>
-  <os>
-    <type arch="x86_64" machine="pc-q35-7.1">hvm</type>
-    <loader readonly="yes" secure="yes" type="pflash">/usr/share/edk2-ovmf/x64/OVMF_CODE.secboot.fd</loader>
-    <nvram>/var/lib/libvirt/qemu/nvram/mx-win11_VARS.fd</nvram>
+  <os firmware="efi">
+    <type arch="x86_64" machine="pc-q35-7.2">hvm</type>
+    <firmware>
+      <feature enabled="no" name="enrolled-keys"/>
+      <feature enabled="yes" name="secure-boot"/>
+    </firmware>
     <boot dev="hd"/>
-    <bootmenu enable="no"/>
   </os>
   <features>
     <acpi/>
-    <apic eoi="on"/>
+    <apic/>
     <hyperv mode="custom">
       <relaxed state="on"/>
       <vapic state="on"/>
       <spinlocks state="on" retries="8191"/>
-      <vpindex state="on"/>
-      <synic state="on"/>
-      <vendor_id state="on" value="0123756792CD"/>
-      <frequencies state="on"/>
     </hyperv>
-    <kvm>
-      <hidden state="on"/>
-    </kvm>
     <vmport state="off"/>
     <smm state="on"/>
   </features>
   <cpu mode="host-passthrough" check="none" migratable="on">
     <topology sockets="1" dies="1" cores="4" threads="2"/>
-    <cache mode="passthrough"/>
-    <feature policy="require" name="hypervisor"/>
-    <feature policy="require" name="invtsc"/>
   </cpu>
   <clock offset="localtime">
     <timer name="rtc" tickpolicy="catchup"/>
@@ -73,19 +67,19 @@
       <driver name="qemu" type="raw" cache="none" io="native" discard="unmap"/>
       <source dev="/dev/nvme0n1"/>
       <target dev="vda" bus="virtio"/>
-      <address type="pci" domain="0x0000" bus="0x0d" slot="0x00" function="0x0"/>
-    </disk>
-    <disk type="block" device="disk">
-      <driver name="qemu" type="raw" cache="none" io="native" discard="unmap"/>
-      <source dev="/dev/sda"/>
-      <target dev="vdb" bus="virtio"/>
-      <address type="pci" domain="0x0000" bus="0x0c" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x03" slot="0x00" function="0x0"/>
     </disk>
     <disk type="block" device="disk">
       <driver name="qemu" type="raw" cache="none" io="native" discard="unmap"/>
       <source dev="/dev/sdb"/>
+      <target dev="vdb" bus="virtio"/>
+      <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
+    </disk>
+    <disk type="block" device="disk">
+      <driver name="qemu" type="raw" cache="none" io="native" discard="unmap"/>
+      <source dev="/dev/sdc"/>
       <target dev="vdc" bus="virtio"/>
-      <address type="pci" domain="0x0000" bus="0x0b" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x05" slot="0x00" function="0x0"/>
     </disk>
     <controller type="usb" index="0" model="qemu-xhci" ports="15">
       <address type="pci" domain="0x0000" bus="0x02" slot="0x00" function="0x0"/>
@@ -161,23 +155,8 @@
       <target chassis="14" port="0x15"/>
       <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x5"/>
     </controller>
-    <controller type="pci" index="15" model="pcie-root-port">
-      <model name="pcie-root-port"/>
-      <target chassis="15" port="0x16"/>
-      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x6"/>
-    </controller>
-    <controller type="pci" index="16" model="pcie-to-pci-bridge">
-      <model name="pcie-pci-bridge"/>
-      <address type="pci" domain="0x0000" bus="0x08" slot="0x00" function="0x0"/>
-    </controller>
-    <controller type="scsi" index="0" model="virtio-scsi">
-      <address type="pci" domain="0x0000" bus="0x0a" slot="0x00" function="0x0"/>
-    </controller>
     <controller type="sata" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
-    </controller>
-    <controller type="virtio-serial" index="0">
-      <address type="pci" domain="0x0000" bus="0x06" slot="0x00" function="0x0"/>
     </controller>
     <filesystem type="mount" accessmode="passthrough">
       <driver type="virtiofs"/>
@@ -186,7 +165,7 @@
       <address type="pci" domain="0x0000" bus="0x09" slot="0x00" function="0x0"/>
     </filesystem>
     <interface type="bridge">
-      <mac address="52:54:00:9c:19:00"/>
+      <mac address="52:54:00:ba:2f:ed"/>
       <source bridge="br0"/>
       <model type="virtio"/>
       <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
@@ -197,32 +176,37 @@
     <input type="evdev">
       <source dev="/dev/input/by-id/usb-04d9_USB_Keyboard-if01-event-kbd" grab="all" grabToggle="ctrl-ctrl" repeat="on"/>
     </input>
-    <input type="mouse" bus="virtio">
-      <address type="pci" domain="0x0000" bus="0x03" slot="0x00" function="0x0"/>
-    </input>
-    <input type="keyboard" bus="virtio">
-      <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
-    </input>
     <input type="mouse" bus="ps2"/>
     <input type="keyboard" bus="ps2"/>
     <tpm model="tpm-crb">
       <backend type="emulator" version="2.0"/>
     </tpm>
     <sound model="ich9">
-      <codec type="micro"/>
-      <audio id="1"/>
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1b" function="0x0"/>
     </sound>
-    <audio id="1" type="none"/>
+    <audio id="1" type="jack">
+      <input clientName="mx-win11" connectPorts="Built-in Audio Analog Stereo"/>
+      <output clientName="mx-win11" connectPorts="Beoplay H9i"/>
+    </audio>
     <hostdev mode="subsystem" type="pci" managed="yes">
       <source>
         <address domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
+      </source>
+      <address type="pci" domain="0x0000" bus="0x06" slot="0x00" function="0x0"/>
+    </hostdev>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="0x0000" bus="0x01" slot="0x00" function="0x1"/>
       </source>
       <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
     </hostdev>
     <watchdog model="itco" action="reset"/>
     <memballoon model="virtio">
-      <address type="pci" domain="0x0000" bus="0x05" slot="0x00" function="0x0"/>
+      <address type="pci" domain="0x0000" bus="0x08" slot="0x00" function="0x0"/>
     </memballoon>
   </devices>
+  <qemu:commandline>
+    <qemu:env name="PIPEWIRE_RUNTIME_DIR" value="/run/user/1000"/>
+    <qemu:env name="PIPEWIRE_LATENCY" value="512/48000"/>
+  </qemu:commandline>
 </domain>
