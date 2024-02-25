@@ -12,10 +12,27 @@
     <source type="memfd"/>
     <access mode="shared"/>
   </memoryBacking>
-  <vcpu placement="static">16</vcpu>
+  <vcpu placement="static" cpuset="8-15,24-31">16</vcpu>
   <iothreads>1</iothreads>
   <cputune>
-    <iothreadpin iothread="1" cpuset="0-1,16-17"/>
+    <vcpupin vcpu="0" cpuset="8"/>
+    <vcpupin vcpu="1" cpuset="24"/>
+    <vcpupin vcpu="2" cpuset="9"/>
+    <vcpupin vcpu="3" cpuset="25"/>
+    <vcpupin vcpu="4" cpuset="10"/>
+    <vcpupin vcpu="5" cpuset="26"/>
+    <vcpupin vcpu="6" cpuset="1"/>
+    <vcpupin vcpu="7" cpuset="27"/>
+    <vcpupin vcpu="8" cpuset="12"/>
+    <vcpupin vcpu="9" cpuset="28"/>
+    <vcpupin vcpu="10" cpuset="13"/>
+    <vcpupin vcpu="11" cpuset="29"/>
+    <vcpupin vcpu="12" cpuset="14"/>
+    <vcpupin vcpu="13" cpuset="30"/>
+    <vcpupin vcpu="14" cpuset="15"/>
+    <vcpupin vcpu="15" cpuset="31"/>
+    <emulatorpin cpuset="0-3,16-19"/>
+    <iothreadpin iothread="1" cpuset="0-3,16-19"/>
   </cputune>
   <os firmware="efi">
     <type arch="x86_64" machine="pc-q35-7.2">hvm</type>
@@ -25,7 +42,7 @@
     </firmware>
     <loader readonly="yes" secure="yes" type="pflash">/usr/share/edk2/x64/OVMF_CODE.secboot.4m.fd</loader>
     <nvram template="/usr/share/edk2/x64/OVMF_VARS.4m.fd">/var/lib/libvirt/qemu/nvram/win11_VARS.fd</nvram>
-    <boot dev="hd"/>
+    <bootmenu enable="no"/>
     <smbios mode="host"/>
   </os>
   <features>
@@ -35,18 +52,7 @@
       <relaxed state="on"/>
       <vapic state="on"/>
       <spinlocks state="on" retries="8191"/>
-      <vpindex state="on"/>
-      <runtime state="on"/>
-      <synic state="on"/>
-      <stimer state="on"/>
-      <reset state="off"/>
-      <vendor_id state="on" value="0123756792CD"/>
-      <frequencies state="on"/>
-      <reenlightenment state="off"/>
-      <tlbflush state="on"/>
-      <ipi state="on"/>
-      <evmcs state="off"/>
-      <avic state="on"/>
+      <vendor_id state="on" value="GenuineIntel"/>
     </hyperv>
     <kvm>
       <hidden state="on"/>
@@ -59,9 +65,11 @@
     <topology sockets="1" dies="1" cores="8" threads="2"/>
     <cache mode="passthrough"/>
     <feature policy="require" name="topoext"/>
-    <feature policy="disable" name="invtsc"/>
+    <feature policy="disable" name="ibpb"/>
+    <feature policy="disable" name="virt-ssbd"/>
     <feature policy="disable" name="svm"/>
-    <feature policy="disable" name="hypervisor"/>
+    <feature policy="disable" name="x2apic"/>
+    <feature policy="require" name="hypervisor"/>
   </cpu>
   <clock offset="localtime">
     <timer name="rtc" tickpolicy="catchup"/>
@@ -78,11 +86,12 @@
   </pm>
   <devices>
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
-    <disk type="block" device="disk">
-      <driver name="qemu" type="raw" cache="writeback" io="threads" discard="unmap"/>
-      <source dev="/dev/disk/by-id/nvme-KINGSTON_SFYRD2000G_50026B768629A017"/>
-      <backingStore/>
-      <target dev="sda" bus="scsi"/>
+    <disk type="file" device="cdrom">
+      <driver name="qemu" type="raw"/>
+      <source file="/storage/Downloads/Browser/virtio-win-0.1.240.iso"/>
+      <target dev="sda" bus="sata"/>
+      <readonly/>
+      <boot order="2"/>
       <address type="drive" controller="0" bus="0" target="0" unit="0"/>
     </disk>
     <controller type="usb" index="0" model="qemu-xhci" ports="15">
@@ -171,12 +180,8 @@
     <controller type="sata" index="0">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
     </controller>
-    <controller type="scsi" index="0" model="virtio-scsi">
-      <driver queues="8" iothread="1"/>
-      <address type="pci" domain="0x0000" bus="0x0b" slot="0x00" function="0x0"/>
-    </controller>
     <filesystem type="mount" accessmode="passthrough">
-      <driver type="virtiofs"/>
+      <driver type="virtiofs" queue="1024"/>
       <source dir="/storage"/>
       <target dir="storage"/>
       <address type="pci" domain="0x0000" bus="0x09" slot="0x00" function="0x0"/>
@@ -194,7 +199,7 @@
       <source dev="/dev/input/by-id/usb-COMPANY_USB_Device-if01-event-mouse"/>
     </input>
     <input type="evdev">
-      <source dev="/dev/input/by-id/usb-04d9_USB_Keyboard-if01-event-kbd" grab="all" grabToggle="ctrl-ctrl" repeat="on"/>
+      <source dev="/dev/input/by-id/usb-04d9_USB_Keyboard-if01-event-kbd" grab="all" grabToggle="scrolllock" repeat="on"/>
     </input>
     <input type="mouse" bus="virtio">
       <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
@@ -210,15 +215,14 @@
     <sound model="ich9">
       <address type="pci" domain="0x0000" bus="0x00" slot="0x1b" function="0x0"/>
     </sound>
-    <audio id="1" type="jack">
-      <input clientName="win11" connectPorts="Built-in Audio Analog Stereo"/>
-      <output clientName="win11" connectPorts="Beoplay H9i"/>
+    <audio id="1" type="pipewire" runtimeDir="/run/user/1000">
+      <input name="qemuinput"/>
+      <output name="qemuoutput"/>
     </audio>
     <hostdev mode="subsystem" type="pci" managed="yes">
       <source>
         <address domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
       </source>
-      <rom bar="on" file="/usr/share/nvidia-rom/3070/Gigabyte.RTX3070.8192.210526.rom"/>
       <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
     </hostdev>
     <hostdev mode="subsystem" type="pci" managed="yes">
@@ -227,13 +231,34 @@
       </source>
       <address type="pci" domain="0x0000" bus="0x0a" slot="0x00" function="0x0"/>
     </hostdev>
+    <hostdev mode="subsystem" type="pci" managed="yes">
+      <source>
+        <address domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
+      </source>
+      <boot order="1"/>
+      <address type="pci" domain="0x0000" bus="0x0b" slot="0x00" function="0x0"/>
+    </hostdev>
     <watchdog model="itco" action="reset"/>
     <memballoon model="virtio">
       <address type="pci" domain="0x0000" bus="0x05" slot="0x00" function="0x0"/>
     </memballoon>
   </devices>
   <qemu:commandline>
-    <qemu:env name="PIPEWIRE_RUNTIME_DIR" value="/run/user/1000"/>
-    <qemu:env name="PIPEWIRE_LATENCY" value="128/48000"/>
+    <qemu:arg value="-smbios"/>
+    <qemu:arg value="type=0,version=UX305UA.201"/>
+    <qemu:arg value="-smbios"/>
+    <qemu:arg value="type=1,manufacturer=ASUS,product=UX305UA,version=2021.1"/>
+    <qemu:arg value="-smbios"/>
+    <qemu:arg value="type=2,manufacturer=Intel,version=2021.5,product=Intel i9-12900K"/>
+    <qemu:arg value="-smbios"/>
+    <qemu:arg value="type=3,manufacturer=XBZJ"/>
+    <qemu:arg value="-smbios"/>
+    <qemu:arg value="type=17,manufacturer=KINGSTON,loc_pfx=DDR5,speed=4800,serial=000000,part=0000"/>
+    <qemu:arg value="-smbios"/>
+    <qemu:arg value="type=4,manufacturer=Intel,max-speed=4800,current-speed=4800"/>
+    <qemu:arg value="-cpu"/>
+    <qemu:arg value="host,family=6,model=158,stepping=2,model_id=Intel(R) Core(TM) i9-12900K CPU @ 2.60GHz,vmware-cpuid-freq=false,enforce=false,host-phys-bits=true,hypervisor=off"/>
+    <qemu:arg value="-machine"/>
+    <qemu:arg value="q35,kernel_irqchip=on"/>
   </qemu:commandline>
 </domain>
